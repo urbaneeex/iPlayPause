@@ -152,11 +152,15 @@ function obj:_onKey(event)
   local data = event:systemKey()
   if not (data and data.key == "PLAY") then return false end
 
-  -- Something is queued (playing or paused): keep native behavior
-  if self:_hasQueue() then return false end
-
-  if data.down and not data["repeat"] then self:_takeOver() end
-  return true -- swallow the event so Apple Music never sees it
+  -- Decide once per press, on key down; key up and repeats reuse the decision
+  -- so the Now Playing lookup never delays the key twice.
+  if data.down and not data["repeat"] then
+    -- Something is queued (playing or paused): keep native behavior
+    self.passThrough = self:_hasQueue()
+    if not self.passThrough then self:_takeOver() end
+  end
+  -- Swallow the event when we took over, so Apple Music never sees it
+  return self.passThrough == false
 end
 
 function obj:_refreshMenubar()
