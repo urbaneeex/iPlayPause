@@ -2,7 +2,7 @@
 
 Make the Mac **Play/Pause** key open the music app you actually use (YouTube Music, Spotify, TIDAL, Deezer, Amazon Music) instead of Apple Music.
 
-![PlayPause menu in the menu bar](docs/menu-on.png)
+![PlayPause menu in the menu bar](docs/on.png)
 
 ## What it does
 
@@ -43,7 +43,7 @@ Click **Route Play/Pause key**. When it is off, the icon is dimmed and the key b
 
 | On | Off |
 | --- | --- |
-| ![Icon when on](docs/icon-on.png) | ![Icon when off](docs/icon-off.png) |
+| ![PlayPause on, with its menu open](docs/on.png) | ![PlayPause off, icon dimmed](docs/off.png) |
 
 ### Choose your player
 
