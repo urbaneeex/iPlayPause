@@ -66,17 +66,29 @@ function obj:_currentPlayer()
   end
 end
 
+-- Read one Now Playing field. nowplaying-cli answers in ~0.1s when something
+-- is queued but hangs for ~3s when nothing is, so it is cut off early: no
+-- answer in time means an empty queue.
+local LOOKUP_TIMEOUT_US = 250000
+
+function obj:_nowPlaying(field)
+  local cmd = string.format(
+    "/usr/bin/perl -MTime::HiRes=ualarm -e 'ualarm %d; exec @ARGV' %s get %s",
+    LOOKUP_TIMEOUT_US, self.nowplaying, field
+  )
+  return (hs.execute(cmd):gsub("%s+$", ""))
+end
+
 -- True when macOS has a Now Playing item, even a paused one. That is the
 -- "queue" the native key resumes before ever falling back to Apple Music.
 function obj:_hasQueue()
-  local out = hs.execute(self.nowplaying .. " get title"):gsub("%s+$", "")
-  return out ~= "" and out ~= "null"
+  local title = self:_nowPlaying("title")
+  return title ~= "" and title ~= "null"
 end
 
 -- True when any app is currently playing media
 function obj:_isPlaying()
-  local out = hs.execute(self.nowplaying .. " get playbackRate")
-  return (tonumber(out) or 0) > 0
+  return (tonumber(self:_nowPlaying("playbackRate")) or 0) > 0
 end
 
 local function toggle(player, app)
@@ -88,17 +100,24 @@ local function toggle(player, app)
   end
 end
 
--- Launch the player and press play as soon as it can take it. After each
--- toggle it waits before re-checking so a slow start is not mistaken for
--- "still paused", which would toggle it back off.
+-- Launch the player and press play once its window exists. A cold player
+-- needs several seconds to load before it reports playback, and a second
+-- toggle in that gap would pause it again, so retries are spaced far apart.
+local RETRY_TICKS = 24 -- 6s at 0.25s per tick
+
 function obj:_launchAndPlay(player, bundleID)
   hs.application.launchOrFocusByBundleID(bundleID)
   local ticks, lastSent = 0, nil
-  hs.timer.doUntil(function() return ticks >= 120 end, function(timer)
+  -- Keep a reference: an unreferenced timer is garbage collected mid-wait
+  if self.launchTimer then self.launchTimer:stop() end
+  self.launchTimer = hs.timer.doUntil(function() return ticks >= 120 end, function(timer)
     ticks = ticks + 1
     local app = hs.application.get(bundleID)
     if not (app and app:mainWindow()) then return end
-    if lastSent and ticks - lastSent < 5 then return end
+    if lastSent and ticks - lastSent < RETRY_TICKS then
+      if self:_isPlaying() then timer:stop() end
+      return
+    end
     if self:_isPlaying() then timer:stop() return end
     toggle(player, app)
     lastSent = ticks
