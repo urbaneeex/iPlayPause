@@ -205,17 +205,13 @@ end
 
 local CHROME_ID = "com.google.Chrome"
 
--- Open the web player in Chrome and tell the user how to install it as an app
+-- Open the web player in Chrome, where it can be installed as an app
 local function installWebApp(player)
   if hs.application.pathForBundleID(CHROME_ID) then
     hs.urlevent.openURLWithBundle(player.web, CHROME_ID)
   else
     hs.urlevent.openURL(player.web)
   end
-  hs.alert.show(
-    "To install " .. player.title .. ": in Chrome open the ⋮ menu → Cast, save and share → Install page as app",
-    10
-  )
 end
 
 -- Install options for a player that is not installed
