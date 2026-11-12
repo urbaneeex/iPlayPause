@@ -46,15 +46,17 @@ Then:
 3. Quit and reopen Hammerspoon (or choose **Reload Config** from its menu bar icon).
 4. In Hammerspoon's preferences, enable **Launch Hammerspoon at login**.
 
-A ♫ icon appears in the menu bar.
+A pixel-art play icon appears in the menu bar.
 
 ## Usage
 
 Click the menu bar icon:
 
-- **Route Play/Pause key**: on or off. Off dims the ♫ icon and restores the native macOS behavior.
+- **Route Play/Pause key**: on or off. Off dims the icon and restores the native macOS behavior.
 - **Players**: pick YouTube Music, Spotify, TIDAL, Deezer or Amazon Music.
 - A player that is not installed shows **Install…** with the available options: **Download the Mac app** (opens the official download page) or **Install as a web app (Chrome)** (opens the web player and shows the steps).
+
+- **Hide menu bar icon**: removes the icon; the key routing keeps working. To bring it back, run `open hammerspoon://playpause-show-icon` in Terminal.
 
 Your choices are remembered between restarts.
 

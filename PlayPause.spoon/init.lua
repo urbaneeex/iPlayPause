@@ -15,6 +15,10 @@ obj.license = "MIT"
 
 local SETTING_ENABLED = "PlayPause.enabled"
 local SETTING_PLAYER = "PlayPause.player"
+local SETTING_SHOW_ICON = "PlayPause.showIcon"
+
+-- `open hammerspoon://playpause-show-icon` brings a hidden icon back
+local SHOW_ICON_EVENT = "playpause-show-icon"
 
 --- PlayPause.players
 --- Variable
@@ -38,7 +42,6 @@ obj.players = {
     toggle = function()
       hs.osascript.applescript('tell application "Spotify" to playpause')
     end,
-    download = "https://www.spotify.com/download/mac/",
     web = "https://open.spotify.com",
   },
   {
@@ -232,12 +235,36 @@ local function installMenu(player)
   return items
 end
 
+-- Pixel-art play triangle: one row of the grid per line, widths in pixels
+local ICON_ROWS = { 1, 3, 5, 7, 5, 3, 1 }
+local ICON_PIXEL = 2
+
+-- Drawn as a template image so macOS tints it for light and dark menu bars;
+-- `alpha` dims it while the routing is switched off.
+local function pixelPlayIcon(alpha)
+  local size = #ICON_ROWS * ICON_PIXEL
+  local canvas = hs.canvas.new({ x = 0, y = 0, w = size, h = size })
+  for row, width in ipairs(ICON_ROWS) do
+    canvas:appendElements({
+      type = "rectangle",
+      action = "fill",
+      antialias = false,
+      fillColor = { white = 0, alpha = alpha },
+      frame = { x = 0, y = (row - 1) * ICON_PIXEL, w = width * ICON_PIXEL, h = ICON_PIXEL },
+    })
+  end
+  local image = canvas:imageFromCanvas()
+  canvas:delete()
+  return image
+end
+
 function obj:_refreshMenubar()
-  -- Dimmed note while switched off
-  self.menubar:setTitle(hs.styledtext.new("♫", {
-    font = { size = 15 },
-    color = { white = 0.5, alpha = self.enabled and 1 or 0.45 },
-  }))
+  if not self.showIcon then
+    self.menubar:removeFromMenuBar()
+    return
+  end
+  self.menubar:returnToMenuBar()
+  self.menubar:setIcon(pixelPlayIcon(self.enabled and 1 or 0.4), true)
   self.menubar:setMenu(function()
     local items = {
       {
@@ -263,8 +290,26 @@ function obj:_refreshMenubar()
         })
       end
     end
+    table.insert(items, { title = "-" })
+    table.insert(items, {
+      title = "Hide menu bar icon",
+      fn = function() self:setShowIcon(false) end,
+    })
     return items
   end)
+end
+
+--- PlayPause:setShowIcon(show)
+--- Method
+--- Show or hide the menu bar icon. While hidden the routing keeps working;
+--- run `open hammerspoon://playpause-show-icon` to bring the icon back.
+function obj:setShowIcon(show)
+  self.showIcon = show
+  hs.settings.set(SETTING_SHOW_ICON, show)
+  self:_refreshMenubar()
+  if not show then
+    hs.alert.show("PlayPause icon hidden. To show it again, run in Terminal:\nopen hammerspoon://" .. SHOW_ICON_EVENT, 8)
+  end
 end
 
 --- PlayPause:setEnabled(enabled)
@@ -299,6 +344,9 @@ function obj:start()
   local enabled = hs.settings.get(SETTING_ENABLED)
   self.enabled = enabled == nil and true or enabled
   self.playerID = hs.settings.get(SETTING_PLAYER) or self.players[1].id
+  local showIcon = hs.settings.get(SETTING_SHOW_ICON)
+  self.showIcon = showIcon == nil and true or showIcon
+  hs.urlevent.bind(SHOW_ICON_EVENT, function() self:setShowIcon(true) end)
 
   self.tap = hs.eventtap.new({ hs.eventtap.event.types.systemDefined }, function(event)
     return self:_onKey(event)
