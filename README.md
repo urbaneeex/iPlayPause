@@ -11,10 +11,8 @@ The key keeps working exactly like macOS does, with one change: the Apple Music 
 | Situation | What happens |
 | --- | --- |
 | Something is in macOS *Now Playing* (a video, a podcast, your player), playing or paused | Native behavior: the key plays or pauses it |
-| *Now Playing* is empty | Your chosen player starts playing instead of Apple Music |
+| *Now Playing* is empty | Your chosen player opens (if closed) and starts playing instead of Apple Music |
 | Feature switched off in the menu | Fully native macOS behavior, nothing intercepted |
-
-To make the first press instant, the chosen player is opened in the background when Hammerspoon starts, played briefly and paused. From then on it sits in *Now Playing* like any native player. This is the **Keep player open in background** option (on by default).
 
 ## Requirements
 
@@ -55,7 +53,6 @@ A ▶︎ icon appears in the menu bar.
 Click the menu bar icon:
 
 - **Route Play/Pause key**: on (▶︎) or off (▷). Off restores the native macOS behavior.
-- **Keep player open in background**: keeps the player ready for an instant response.
 - **Players**: pick YouTube Music, Spotify, TIDAL, Deezer or Amazon Music. Players that are not installed are greyed out.
 
 Your choices are remembered between restarts.
@@ -86,7 +83,7 @@ spoon.PlayPause:start()
 - **Nothing happens when I press the key**: check that Hammerspoon has Accessibility access and that the menu shows ▶︎, not ▷.
 - **"install nowplaying-cli" alert**: run `brew install nowplaying-cli`, then reload the config.
 - **Apple Music still opens**: Hammerspoon is not running or lacks Accessibility permission.
-- **The first press after startup is slow**: the player was closed. Keep **Keep player open in background** enabled and do not quit the player with ⌘Q.
+- **It takes a few seconds to start**: the player was closed, so it has to launch and load first. It is instant while the player is open.
 
 ## Limitations
 

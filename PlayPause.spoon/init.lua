@@ -15,7 +15,6 @@ obj.license = "MIT"
 
 local SETTING_ENABLED = "PlayPause.enabled"
 local SETTING_PLAYER = "PlayPause.player"
-local SETTING_KEEP_OPEN = "PlayPause.keepOpen"
 
 --- PlayPause.players
 --- Variable
@@ -91,42 +90,19 @@ end
 
 -- Launch the player and press play as soon as it can take it. After each
 -- toggle it waits before re-checking so a slow start is not mistaken for
--- "still paused", which would toggle it back off. `onPlaying(app)` runs once
--- playback has started.
-function obj:_launchAndPlay(player, bundleID, onPlaying, background)
-  if background then
-    hs.execute("/usr/bin/open -g -b " .. bundleID)
-  else
-    hs.application.launchOrFocusByBundleID(bundleID)
-  end
+-- "still paused", which would toggle it back off.
+function obj:_launchAndPlay(player, bundleID)
+  hs.application.launchOrFocusByBundleID(bundleID)
   local ticks, lastSent = 0, nil
   hs.timer.doUntil(function() return ticks >= 120 end, function(timer)
     ticks = ticks + 1
     local app = hs.application.get(bundleID)
     if not (app and app:mainWindow()) then return end
     if lastSent and ticks - lastSent < 5 then return end
-    if self:_isPlaying() then
-      timer:stop()
-      if onPlaying then onPlaying(app) end
-      return
-    end
+    if self:_isPlaying() then timer:stop() return end
     toggle(player, app)
     lastSent = ticks
   end, 0.25)
-end
-
--- Open the player in the background and prime it: play, then pause. From
--- then on it sits in macOS Now Playing like any native player, so the key
--- resumes it instantly through the native path.
-function obj:_preload()
-  if not (self.enabled and self.keepOpen) then return end
-  local player = self:_currentPlayer()
-  local path = player and findAppPath(player.app)
-  local bundleID = path and bundleIDOf(path)
-  if not bundleID or hs.application.get(bundleID) or self:_hasQueue() then return end
-  self:_launchAndPlay(player, bundleID, function()
-    hs.execute(self.nowplaying .. " pause")
-  end, true)
 end
 
 function obj:_takeOver()
@@ -174,12 +150,6 @@ function obj:_refreshMenubar()
       },
       { title = "-" },
     }
-    table.insert(items, {
-      title = "Keep player open in background",
-      checked = self.keepOpen,
-      fn = function() self:setKeepOpen(not self.keepOpen) end,
-    })
-    table.insert(items, { title = "-" })
     for _, player in ipairs(self.players) do
       table.insert(items, {
         title = player.title,
@@ -200,16 +170,6 @@ function obj:setEnabled(enabled)
   hs.settings.set(SETTING_ENABLED, enabled)
   if enabled then self.tap:start() else self.tap:stop() end
   self:_refreshMenubar()
-  self:_preload()
-end
-
---- PlayPause:setKeepOpen(keepOpen)
---- Method
---- Keep the chosen player running hidden so the key responds instantly.
-function obj:setKeepOpen(keepOpen)
-  self.keepOpen = keepOpen
-  hs.settings.set(SETTING_KEEP_OPEN, keepOpen)
-  self:_preload()
 end
 
 --- PlayPause:setPlayer(id)
@@ -219,7 +179,6 @@ function obj:setPlayer(id)
   self.playerID = id
   hs.settings.set(SETTING_PLAYER, id)
   self:_refreshMenubar()
-  self:_preload()
 end
 
 --- PlayPause:start()
@@ -235,8 +194,6 @@ function obj:start()
   local enabled = hs.settings.get(SETTING_ENABLED)
   self.enabled = enabled == nil and true or enabled
   self.playerID = hs.settings.get(SETTING_PLAYER) or self.players[1].id
-  local keepOpen = hs.settings.get(SETTING_KEEP_OPEN)
-  self.keepOpen = keepOpen == nil and true or keepOpen
 
   self.tap = hs.eventtap.new({ hs.eventtap.event.types.systemDefined }, function(event)
     return self:_onKey(event)
