@@ -91,8 +91,17 @@ function obj:_isPlaying()
   return (tonumber(self:_nowPlaying("playbackRate")) or 0) > 0
 end
 
+-- Browser-installed web apps (Chrome, Edge, Brave) are not scriptable, so
+-- they always get the space bar, whatever the player's native toggle is.
+local function isWebApp(app)
+  local id = app:bundleID() or ""
+  return id:find("^com%.google%.Chrome%.app%.") ~= nil
+    or id:find("^com%.microsoft%.edgemac%.app%.") ~= nil
+    or id:find("^com%.brave%.Browser%.app%.") ~= nil
+end
+
 local function toggle(player, app)
-  if type(player.toggle) == "function" then
+  if type(player.toggle) == "function" and not isWebApp(app) then
     player.toggle(app)
   else
     hs.eventtap.event.newKeyEvent("space", true):post(app)

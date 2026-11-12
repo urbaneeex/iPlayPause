@@ -66,6 +66,8 @@ YouTube Music has no native Mac app. Install it from Chrome:
 
 The app lands in `~/Applications/Chrome Apps.localized`, which the Spoon searches.
 
+Any player installed this way (for example Spotify from <https://open.spotify.com>) works the same: web apps are controlled with the space bar.
+
 ## Custom players
 
 Add an entry before calling `start()`. `app` is the app name without `.app`. `toggle` is `"space"` (sends the space bar to the app) or a function:
@@ -88,7 +90,7 @@ spoon.PlayPause:start()
 ## Limitations
 
 - The `"space"` toggle does nothing while a text field (for example search) has focus in the player.
-- Only YouTube Music has been tested. The other players are untested.
+- Tested with YouTube Music and Spotify, both installed as Chrome web apps. The native Spotify app and the other players are untested.
 - Relies on `nowplaying-cli` to read macOS *Now Playing*.
 
 ## License
