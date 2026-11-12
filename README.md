@@ -46,14 +46,15 @@ Then:
 3. Quit and reopen Hammerspoon (or choose **Reload Config** from its menu bar icon).
 4. In Hammerspoon's preferences, enable **Launch Hammerspoon at login**.
 
-A ▶︎ icon appears in the menu bar.
+A ♫ icon appears in the menu bar.
 
 ## Usage
 
 Click the menu bar icon:
 
-- **Route Play/Pause key**: on (▶︎) or off (▷). Off restores the native macOS behavior.
-- **Players**: pick YouTube Music, Spotify, TIDAL, Deezer or Amazon Music. Players that are not installed are greyed out.
+- **Route Play/Pause key**: on or off. Off dims the ♫ icon and restores the native macOS behavior.
+- **Players**: pick YouTube Music, Spotify, TIDAL, Deezer or Amazon Music.
+- A player that is not installed shows **Install…** with the available options: **Download the Mac app** (opens the official download page) or **Install as a web app (Chrome)** (opens the web player and shows the steps).
 
 Your choices are remembered between restarts.
 
@@ -82,7 +83,7 @@ spoon.PlayPause:start()
 
 ## Troubleshooting
 
-- **Nothing happens when I press the key**: check that Hammerspoon has Accessibility access and that the menu shows ▶︎, not ▷.
+- **Nothing happens when I press the key**: check that Hammerspoon has Accessibility access and that **Route Play/Pause key** is ticked in the menu.
 - **"install nowplaying-cli" alert**: run `brew install nowplaying-cli`, then reload the config.
 - **Apple Music still opens**: Hammerspoon is not running or lacks Accessibility permission.
 - **It takes a few seconds to start**: the player was closed, so it has to launch and load first. It is instant while the player is open.

@@ -21,8 +21,16 @@ local SETTING_PLAYER = "PlayPause.player"
 --- Known players, in menu order. Add your own before calling `start()`:
 --- `app` is the .app name (without extension), `toggle` is either "space"
 --- (sends the space bar to the app) or a function(app) that toggles playback.
+--- `download` (native Mac app page) and `web` (web player to install from the
+--- browser as an app) are optional and feed the menu's install options.
 obj.players = {
-  { id = "ytmusic", title = "YouTube Music", app = "YouTube Music", toggle = "space" },
+  {
+    id = "ytmusic",
+    title = "YouTube Music",
+    app = "YouTube Music",
+    toggle = "space",
+    web = "https://music.youtube.com",
+  },
   {
     id = "spotify",
     title = "Spotify",
@@ -30,10 +38,32 @@ obj.players = {
     toggle = function()
       hs.osascript.applescript('tell application "Spotify" to playpause')
     end,
+    download = "https://www.spotify.com/download/mac/",
+    web = "https://open.spotify.com",
   },
-  { id = "tidal", title = "TIDAL", app = "TIDAL", toggle = "space" },
-  { id = "deezer", title = "Deezer", app = "Deezer", toggle = "space" },
-  { id = "amazonmusic", title = "Amazon Music", app = "Amazon Music", toggle = "space" },
+  {
+    id = "tidal",
+    title = "TIDAL",
+    app = "TIDAL",
+    toggle = "space",
+    download = "https://tidal.com/download",
+    web = "https://listen.tidal.com",
+  },
+  {
+    id = "deezer",
+    title = "Deezer",
+    app = "Deezer",
+    toggle = "space",
+    download = "https://www.deezer.com/download",
+    web = "https://www.deezer.com",
+  },
+  {
+    id = "amazonmusic",
+    title = "Amazon Music",
+    app = "Amazon Music",
+    toggle = "space",
+    web = "https://music.amazon.com",
+  },
 }
 
 local SEARCH_DIRS = {
@@ -169,8 +199,45 @@ function obj:_onKey(event)
   return self.passThrough == false
 end
 
+local CHROME_ID = "com.google.Chrome"
+
+-- Open the web player in Chrome and tell the user how to install it as an app
+local function installWebApp(player)
+  if hs.application.pathForBundleID(CHROME_ID) then
+    hs.urlevent.openURLWithBundle(player.web, CHROME_ID)
+  else
+    hs.urlevent.openURL(player.web)
+  end
+  hs.alert.show(
+    "To install " .. player.title .. ": in Chrome open the ⋮ menu → Cast, save and share → Install page as app",
+    10
+  )
+end
+
+-- Install options for a player that is not installed
+local function installMenu(player)
+  local items = {}
+  if player.download then
+    table.insert(items, {
+      title = "Download the Mac app",
+      fn = function() hs.urlevent.openURL(player.download) end,
+    })
+  end
+  if player.web then
+    table.insert(items, {
+      title = "Install as a web app (Chrome)",
+      fn = function() installWebApp(player) end,
+    })
+  end
+  return items
+end
+
 function obj:_refreshMenubar()
-  self.menubar:setTitle(self.enabled and "▶︎" or "▷")
+  -- Dimmed note while switched off
+  self.menubar:setTitle(hs.styledtext.new("♫", {
+    font = { size = 15 },
+    color = { white = 0.5, alpha = self.enabled and 1 or 0.45 },
+  }))
   self.menubar:setMenu(function()
     local items = {
       {
@@ -181,12 +248,20 @@ function obj:_refreshMenubar()
       { title = "-" },
     }
     for _, player in ipairs(self.players) do
-      table.insert(items, {
-        title = player.title,
-        checked = player.id == self.playerID,
-        disabled = findAppPath(player.app) == nil,
-        fn = function() self:setPlayer(player.id) end,
-      })
+      if findAppPath(player.app) then
+        table.insert(items, {
+          title = player.title,
+          checked = player.id == self.playerID,
+          fn = function() self:setPlayer(player.id) end,
+        })
+      else
+        local install = installMenu(player)
+        table.insert(items, {
+          title = player.title .. " — Install…",
+          disabled = #install == 0,
+          menu = #install > 0 and install or nil,
+        })
+      end
     end
     return items
   end)
