@@ -22,31 +22,42 @@ The key keeps working exactly like macOS does, with one change: the Apple Music 
 
 ## Install
 
+One line in Terminal:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/urbaneeex/playpause-apple/main/install.sh | bash
+```
+
+It installs Hammerspoon and `nowplaying-cli` with Homebrew (if missing), downloads the Spoon and loads it from `~/.hammerspoon/init.lua`. On a new Hammerspoon setup it also makes Hammerspoon start at login and hides its Dock icon.
+
+The only manual step, the first time: enable **Hammerspoon** in System Settings → Privacy & Security → Accessibility (the installer opens that window), then run `open -a Hammerspoon`.
+
+A pixel-art play icon appears in the menu bar.
+
+To update, run the same line again.
+
+### Uninstall
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/urbaneeex/playpause-apple/main/uninstall.sh | bash
+```
+
+### Manual install
+
 ```sh
 brew install --cask hammerspoon
 brew install nowplaying-cli
-
 git clone https://github.com/urbaneeex/playpause-apple.git
-cd playpause-apple
 mkdir -p ~/.hammerspoon/Spoons
-ln -s "$PWD/PlayPause.spoon" ~/.hammerspoon/Spoons/PlayPause.spoon
+ln -s "$PWD/playpause-apple/PlayPause.spoon" ~/.hammerspoon/Spoons/PlayPause.spoon
 ```
 
-Add this to `~/.hammerspoon/init.lua` (create the file if it does not exist):
+Add to `~/.hammerspoon/init.lua`:
 
 ```lua
 hs.loadSpoon("PlayPause")
 spoon.PlayPause:start()
 ```
-
-Then:
-
-1. Open Hammerspoon.
-2. Grant it **Accessibility** access: System Settings → Privacy & Security → Accessibility.
-3. Quit and reopen Hammerspoon (or choose **Reload Config** from its menu bar icon).
-4. In Hammerspoon's preferences, enable **Launch Hammerspoon at login**.
-
-A pixel-art play icon appears in the menu bar.
 
 ## Usage
 

@@ -324,9 +324,6 @@ function obj:setShowIcon(show)
   self.showIcon = show
   hs.settings.set(SETTING_SHOW_ICON, show)
   self:_refreshMenubar()
-  if not show then
-    hs.alert.show("PlayPause icon hidden. To show it again, run in Terminal:\nopen hammerspoon://" .. SHOW_ICON_EVENT, 8)
-  end
 end
 
 --- PlayPause:setEnabled(enabled)
