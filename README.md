@@ -43,7 +43,7 @@ Click **Route Play/Pause key**. When it is off, the icon is dimmed and the key b
 
 | On | Off |
 | --- | --- |
-| ![Icon when on](docs/menu-on.png) | ![Icon when off](docs/icon-off.png) |
+| ![Icon when on](docs/icon-on.png) | ![Icon when off](docs/icon-off.png) |
 
 ### Choose your player
 
