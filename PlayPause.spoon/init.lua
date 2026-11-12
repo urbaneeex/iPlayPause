@@ -42,6 +42,7 @@ obj.players = {
     toggle = function()
       hs.osascript.applescript('tell application "Spotify" to playpause')
     end,
+    download = "https://www.spotify.com/download/mac/",
     web = "https://open.spotify.com",
   },
   {
@@ -235,23 +236,43 @@ local function installMenu(player)
   return items
 end
 
--- Pixel-art play triangle: one row of the grid per line, widths in pixels
-local ICON_ROWS = { 1, 3, 5, 7, 5, 3, 1 }
-local ICON_PIXEL = 2
+-- Pixel-art icon: a play triangle inside a circle. "#" is a filled pixel.
+local ICON_BITMAP = {
+  "......#####......",
+  "....##.....##....",
+  "...#.........#...",
+  "..#...........#..",
+  ".#...#.........#.",
+  ".#...###.......#.",
+  "#....#####......#",
+  "#....######.....#",
+  "#....########...#",
+  "#....######.....#",
+  "#....#####......#",
+  ".#...###.......#.",
+  ".#...#.........#.",
+  "..#...........#..",
+  "...#.........#...",
+  "....##.....##....",
+  "......#####......",
+}
 
 -- Drawn as a template image so macOS tints it for light and dark menu bars;
 -- `alpha` dims it while the routing is switched off.
 local function pixelPlayIcon(alpha)
-  local size = #ICON_ROWS * ICON_PIXEL
+  local size = #ICON_BITMAP
   local canvas = hs.canvas.new({ x = 0, y = 0, w = size, h = size })
-  for row, width in ipairs(ICON_ROWS) do
-    canvas:appendElements({
-      type = "rectangle",
-      action = "fill",
-      antialias = false,
-      fillColor = { white = 0, alpha = alpha },
-      frame = { x = 0, y = (row - 1) * ICON_PIXEL, w = width * ICON_PIXEL, h = ICON_PIXEL },
-    })
+  for row, line in ipairs(ICON_BITMAP) do
+    -- One rectangle per horizontal run of filled pixels
+    for start, run in line:gmatch("()(#+)") do
+      canvas:appendElements({
+        type = "rectangle",
+        action = "fill",
+        antialias = false,
+        fillColor = { white = 0, alpha = alpha },
+        frame = { x = start - 1, y = row - 1, w = #run, h = 1 },
+      })
+    end
   end
   local image = canvas:imageFromCanvas()
   canvas:delete()
