@@ -1,12 +1,12 @@
 #!/bin/bash
-# PlayPause installer: sets up Homebrew (if missing), Hammerspoon,
+# iPlayPause installer: sets up Homebrew (if missing), Hammerspoon,
 # nowplaying-cli and the Spoon.
-# Usage: curl -fsSL https://raw.githubusercontent.com/urbaneeex/playpause-apple/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/urbaneeex/iPlayPause/main/install.sh | bash
 set -euo pipefail
 
-REPO_RAW="https://raw.githubusercontent.com/urbaneeex/playpause-apple/main"
+REPO_RAW="https://raw.githubusercontent.com/urbaneeex/iPlayPause/main"
 HS_DIR="$HOME/.hammerspoon"
-SPOON_DIR="$HS_DIR/Spoons/PlayPause.spoon"
+SPOON_DIR="$HS_DIR/Spoons/iPlayPause.spoon"
 INIT="$HS_DIR/init.lua"
 
 # Homebrew may be installed but missing from PATH in a non-login shell
@@ -45,11 +45,11 @@ fi
 
 # A symlinked Spoon is a development checkout: leave it alone
 if [ -L "$SPOON_DIR" ]; then
-  echo "PlayPause.spoon is a symlink, keeping it."
+  echo "iPlayPause.spoon is a symlink, keeping it."
 else
-  echo "Installing the PlayPause Spoon..."
+  echo "Installing the iPlayPause Spoon..."
   mkdir -p "$SPOON_DIR"
-  curl -fsSL "$REPO_RAW/PlayPause.spoon/init.lua" -o "$SPOON_DIR/init.lua"
+  curl -fsSL "$REPO_RAW/iPlayPause.spoon/init.lua" -o "$SPOON_DIR/init.lua"
 fi
 
 mkdir -p "$HS_DIR"
@@ -59,11 +59,11 @@ if [ ! -f "$INIT" ]; then
 hs.autoLaunch(true)
 hs.dockIcon(false)
 
-hs.loadSpoon("PlayPause")
-spoon.PlayPause:start()
+hs.loadSpoon("iPlayPause")
+spoon.iPlayPause:start()
 LUA
-elif ! grep -q 'loadSpoon("PlayPause")' "$INIT"; then
-  printf '\nhs.loadSpoon("PlayPause")\nspoon.PlayPause:start()\n' >> "$INIT"
+elif ! grep -q 'loadSpoon("iPlayPause")' "$INIT"; then
+  printf '\nhs.loadSpoon("iPlayPause")\nspoon.iPlayPause:start()\n' >> "$INIT"
 fi
 
 # Restart Hammerspoon so it picks up the Spoon
@@ -72,7 +72,7 @@ sleep 1
 open -a Hammerspoon
 
 echo
-echo "PlayPause is installed."
+echo "iPlayPause is installed."
 if [ "$fresh_hammerspoon" = true ]; then
   open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
   echo "One step left: enable Hammerspoon under Accessibility in the System Settings"

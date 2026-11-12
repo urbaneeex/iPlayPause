@@ -1,8 +1,8 @@
-# PlayPause
+# iPlayPause
 
 Make the Mac **Play/Pause** key open the music app you actually use (YouTube Music, Spotify, TIDAL, Deezer, Amazon Music) instead of Apple Music.
 
-![PlayPause menu in the menu bar](docs/on.png)
+![iPlayPause menu in the menu bar](docs/on.png)
 
 ## What it does
 
@@ -10,7 +10,7 @@ Make the Mac **Play/Pause** key open the music app you actually use (YouTube Mus
 | --- | --- |
 | Something is already in macOS *Now Playing* (a video, a podcast, your music), playing or paused | Same as always: it plays or pauses it |
 | Nothing is in *Now Playing* | Your chosen player opens and starts playing, instead of Apple Music |
-| PlayPause is switched off | Normal macOS behavior |
+| iPlayPause is switched off | Normal macOS behavior |
 
 ## Install
 
@@ -18,7 +18,7 @@ Make the Mac **Play/Pause** key open the music app you actually use (YouTube Mus
 2. Paste this line and press Enter:
 
    ```sh
-   curl -fsSL https://raw.githubusercontent.com/urbaneeex/playpause-apple/main/install.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/urbaneeex/iPlayPause/main/install.sh | bash
    ```
 
 3. If it asks for your Mac password, type it and press Enter (nothing shows while you type). This only happens when [Homebrew](https://brew.sh) has to be installed first.
@@ -31,7 +31,7 @@ Make the Mac **Play/Pause** key open the music app you actually use (YouTube Mus
 
 Done. A play icon appears in the menu bar.
 
-The installer sets up everything PlayPause needs: Homebrew (if missing), [Hammerspoon](https://www.hammerspoon.org), `nowplaying-cli` and the PlayPause extension. To update later, run the same line again.
+The installer sets up everything iPlayPause needs: Homebrew (if missing), [Hammerspoon](https://www.hammerspoon.org), `nowplaying-cli` and the iPlayPause extension. To update later, run the same line again.
 
 ## Use
 
@@ -43,7 +43,7 @@ Click **Route Play/Pause key**. When it is off, the icon is dimmed and the key b
 
 | On | Off |
 | --- | --- |
-| ![PlayPause on, with its menu open](docs/on.png) | ![PlayPause off, icon dimmed](docs/off.png) |
+| ![iPlayPause on, with its menu open](docs/on.png) | ![iPlayPause off, icon dimmed](docs/off.png) |
 
 ### Choose your player
 
@@ -65,7 +65,7 @@ Once installed, the player becomes selectable in the list.
 Click **Hide menu bar icon**. The key keeps working. To bring the icon back, run this in Terminal:
 
 ```sh
-open hammerspoon://playpause-show-icon
+open hammerspoon://iplaypause-show-icon
 ```
 
 ## Troubleshooting
@@ -78,38 +78,38 @@ open hammerspoon://playpause-show-icon
 ## Uninstall
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/urbaneeex/playpause-apple/main/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/urbaneeex/iPlayPause/main/uninstall.sh | bash
 ```
 
 The Play/Pause key goes back to the macOS default.
 
 ## For developers
 
-PlayPause is a Hammerspoon Spoon. Manual install:
+iPlayPause is a Hammerspoon Spoon. Manual install:
 
 ```sh
 brew install --cask hammerspoon
 brew install nowplaying-cli
-git clone https://github.com/urbaneeex/playpause-apple.git
+git clone https://github.com/urbaneeex/iPlayPause.git
 mkdir -p ~/.hammerspoon/Spoons
-ln -s "$PWD/playpause-apple/PlayPause.spoon" ~/.hammerspoon/Spoons/PlayPause.spoon
+ln -s "$PWD/iPlayPause/iPlayPause.spoon" ~/.hammerspoon/Spoons/iPlayPause.spoon
 ```
 
 Add to `~/.hammerspoon/init.lua`:
 
 ```lua
-hs.loadSpoon("PlayPause")
-spoon.PlayPause:start()
+hs.loadSpoon("iPlayPause")
+spoon.iPlayPause:start()
 ```
 
 To add your own player, insert it before `start()`. `app` is the app name without `.app`; `toggle` is `"space"` (sends the space bar to the app) or a function:
 
 ```lua
-hs.loadSpoon("PlayPause")
-table.insert(spoon.PlayPause.players, {
+hs.loadSpoon("iPlayPause")
+table.insert(spoon.iPlayPause.players, {
   id = "vlc", title = "VLC", app = "VLC", toggle = "space",
 })
-spoon.PlayPause:start()
+spoon.iPlayPause:start()
 ```
 
 ## License

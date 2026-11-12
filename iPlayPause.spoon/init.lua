@@ -1,4 +1,4 @@
---- === PlayPause ===
+--- === iPlayPause ===
 ---
 --- Route the Play/Pause media key to the music app of your choice instead of
 --- Apple Music. macOS behavior is untouched while something is already
@@ -9,18 +9,18 @@
 local obj = {}
 obj.__index = obj
 
-obj.name = "PlayPause"
+obj.name = "iPlayPause"
 obj.version = "0.1.0"
 obj.license = "MIT"
 
-local SETTING_ENABLED = "PlayPause.enabled"
-local SETTING_PLAYER = "PlayPause.player"
-local SETTING_SHOW_ICON = "PlayPause.showIcon"
+local SETTING_ENABLED = "iPlayPause.enabled"
+local SETTING_PLAYER = "iPlayPause.player"
+local SETTING_SHOW_ICON = "iPlayPause.showIcon"
 
--- `open hammerspoon://playpause-show-icon` brings a hidden icon back
-local SHOW_ICON_EVENT = "playpause-show-icon"
+-- `open hammerspoon://iplaypause-show-icon` brings a hidden icon back
+local SHOW_ICON_EVENT = "iplaypause-show-icon"
 
---- PlayPause.players
+--- iPlayPause.players
 --- Variable
 --- Known players, in menu order. Add your own before calling `start()`:
 --- `app` is the .app name (without extension), `toggle` is either "space"
@@ -316,17 +316,17 @@ function obj:_refreshMenubar()
   end)
 end
 
---- PlayPause:setShowIcon(show)
+--- iPlayPause:setShowIcon(show)
 --- Method
 --- Show or hide the menu bar icon. While hidden the routing keeps working;
---- run `open hammerspoon://playpause-show-icon` to bring the icon back.
+--- run `open hammerspoon://iplaypause-show-icon` to bring the icon back.
 function obj:setShowIcon(show)
   self.showIcon = show
   hs.settings.set(SETTING_SHOW_ICON, show)
   self:_refreshMenubar()
 end
 
---- PlayPause:setEnabled(enabled)
+--- iPlayPause:setEnabled(enabled)
 --- Method
 --- Turn the routing on or off. Off restores the native macOS behavior.
 function obj:setEnabled(enabled)
@@ -336,22 +336,22 @@ function obj:setEnabled(enabled)
   self:_refreshMenubar()
 end
 
---- PlayPause:setPlayer(id)
+--- iPlayPause:setPlayer(id)
 --- Method
---- Choose the player (an `id` from `PlayPause.players`).
+--- Choose the player (an `id` from `iPlayPause.players`).
 function obj:setPlayer(id)
   self.playerID = id
   hs.settings.set(SETTING_PLAYER, id)
   self:_refreshMenubar()
 end
 
---- PlayPause:start()
+--- iPlayPause:start()
 --- Method
 --- Create the menu bar item and start intercepting the key (if enabled).
 function obj:start()
   self.nowplaying = findNowPlayingCli()
   if not self.nowplaying then
-    hs.alert.show("PlayPause: install nowplaying-cli (brew install nowplaying-cli)", 6)
+    hs.alert.show("iPlayPause: install nowplaying-cli (brew install nowplaying-cli)", 6)
     return self
   end
 
@@ -370,7 +370,7 @@ function obj:start()
   return self
 end
 
---- PlayPause:stop()
+--- iPlayPause:stop()
 --- Method
 --- Stop intercepting and remove the menu bar item.
 function obj:stop()
