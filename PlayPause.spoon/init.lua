@@ -100,28 +100,30 @@ local function toggle(player, app)
   end
 end
 
--- Launch the player and press play once its window exists. A cold player
--- needs several seconds to load before it reports playback, and a second
--- toggle in that gap would pause it again, so retries are spaced far apart.
-local RETRY_TICKS = 24 -- 6s at 0.25s per tick
+-- Launch the player and press play as soon as it accepts it. The page ignores
+-- key presses until it has loaded and gives no signal when it is ready, so
+-- the toggle is retried until playback is reported. An accepted toggle shows
+-- up within ~0.7s; if a slow start makes a retry pause it again, the next
+-- retry resumes it.
+local RETRY_SECONDS = 1.0
+local GIVE_UP_SECONDS = 30
 
 function obj:_launchAndPlay(player, bundleID)
   hs.application.launchOrFocusByBundleID(bundleID)
-  local ticks, lastSent = 0, nil
+  local started, lastSent = hs.timer.secondsSinceEpoch(), nil
   -- Keep a reference: an unreferenced timer is garbage collected mid-wait
   if self.launchTimer then self.launchTimer:stop() end
-  self.launchTimer = hs.timer.doUntil(function() return ticks >= 120 end, function(timer)
-    ticks = ticks + 1
+  self.launchTimer = hs.timer.doEvery(0.1, function(timer)
+    local now = hs.timer.secondsSinceEpoch()
+    if now - started > GIVE_UP_SECONDS then timer:stop() return end
     local app = hs.application.get(bundleID)
     if not (app and app:mainWindow()) then return end
-    if lastSent and ticks - lastSent < RETRY_TICKS then
-      if self:_isPlaying() then timer:stop() end
-      return
-    end
     if self:_isPlaying() then timer:stop() return end
-    toggle(player, app)
-    lastSent = ticks
-  end, 0.25)
+    if not lastSent or now - lastSent >= RETRY_SECONDS then
+      toggle(player, app)
+      lastSent = hs.timer.secondsSinceEpoch()
+    end
+  end)
 end
 
 function obj:_takeOver()
