@@ -1,5 +1,6 @@
 #!/bin/bash
-# PlayPause installer: sets up Hammerspoon, nowplaying-cli and the Spoon.
+# PlayPause installer: sets up Homebrew (if missing), Hammerspoon,
+# nowplaying-cli and the Spoon.
 # Usage: curl -fsSL https://raw.githubusercontent.com/urbaneeex/playpause-apple/main/install.sh | bash
 set -euo pipefail
 
@@ -8,9 +9,26 @@ HS_DIR="$HOME/.hammerspoon"
 SPOON_DIR="$HS_DIR/Spoons/PlayPause.spoon"
 INIT="$HS_DIR/init.lua"
 
-if ! command -v brew >/dev/null 2>&1; then
-  echo "Homebrew is required. Install it from https://brew.sh and run this again." >&2
-  exit 1
+# Homebrew may be installed but missing from PATH in a non-login shell
+load_brew() {
+  local candidate
+  for candidate in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+    if [ -x "$candidate" ]; then
+      eval "$("$candidate" shellenv)"
+      return 0
+    fi
+  done
+  return 1
+}
+
+if ! command -v brew >/dev/null 2>&1 && ! load_brew; then
+  echo "Installing Homebrew (it will ask for your Mac password)..."
+  # Read from the terminal: this script's own stdin is the curl pipe
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/tty
+  if ! load_brew; then
+    echo "Homebrew could not be installed. Install it from https://brew.sh and run this again." >&2
+    exit 1
+  fi
 fi
 
 fresh_hammerspoon=false

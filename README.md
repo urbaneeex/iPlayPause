@@ -1,48 +1,91 @@
 # PlayPause
 
-Make the Mac **Play/Pause** key control the music app you actually use (YouTube Music, Spotify, TIDAL, Deezer, Amazon Music) instead of launching Apple Music.
+Make the Mac **Play/Pause** key open the music app you actually use (YouTube Music, Spotify, TIDAL, Deezer, Amazon Music) instead of Apple Music.
 
-It is a [Hammerspoon](https://www.hammerspoon.org) Spoon (a small Lua extension) with a menu bar item.
+![PlayPause menu in the menu bar](docs/menu-on.png)
 
-## How it behaves
+## What it does
 
-The key keeps working exactly like macOS does, with one change: the Apple Music fallback.
-
-| Situation | What happens |
+| When you press Play/Pause | What happens |
 | --- | --- |
-| Something is in macOS *Now Playing* (a video, a podcast, your player), playing or paused | Native behavior: the key plays or pauses it |
-| *Now Playing* is empty | Your chosen player opens (if closed) and starts playing instead of Apple Music |
-| Feature switched off in the menu | Fully native macOS behavior, nothing intercepted |
-
-## Requirements
-
-- macOS (Apple Silicon or Intel)
-- [Homebrew](https://brew.sh)
-- Your player installed as an app. For YouTube Music see below.
+| Something is already in macOS *Now Playing* (a video, a podcast, your music), playing or paused | Same as always: it plays or pauses it |
+| Nothing is in *Now Playing* | Your chosen player opens and starts playing, instead of Apple Music |
+| PlayPause is switched off | Normal macOS behavior |
 
 ## Install
 
-One line in Terminal:
+1. Open the **Terminal** app (press ⌘ Space, type `Terminal`, press Enter).
+2. Paste this line and press Enter:
+
+   ```sh
+   curl -fsSL https://raw.githubusercontent.com/urbaneeex/playpause-apple/main/install.sh | bash
+   ```
+
+3. If it asks for your Mac password, type it and press Enter (nothing shows while you type). This only happens when [Homebrew](https://brew.sh) has to be installed first.
+4. A System Settings window opens. Turn on **Hammerspoon** under **Accessibility**. This lets it see the Play/Pause key.
+5. Back in Terminal, run:
+
+   ```sh
+   open -a Hammerspoon
+   ```
+
+Done. A play icon appears in the menu bar.
+
+The installer sets up everything PlayPause needs: Homebrew (if missing), [Hammerspoon](https://www.hammerspoon.org), `nowplaying-cli` and the PlayPause extension. To update later, run the same line again.
+
+## Use
+
+Click the play icon in the menu bar.
+
+### Turn it on or off
+
+Click **Route Play/Pause key**. When it is off, the icon is dimmed and the key behaves like a normal Mac.
+
+| On | Off |
+| --- | --- |
+| ![Icon when on](docs/menu-on.png) | ![Icon when off](docs/icon-off.png) |
+
+### Choose your player
+
+Click a player in the list. The one with the check mark is the one the key opens. Switch to another at any time the same way.
+
+### Install a player you do not have
+
+A player that is not on your Mac shows **Install…**. Open it and pick an option:
+
+- **Download the Mac app**: opens the official download page.
+- **Install as a web app (Chrome)**: opens the web player in Chrome. Then, in Chrome, click **⋮** → **Cast, save and share** → **Install page as app**.
+
+YouTube Music has no Mac app, so it is always installed as a web app.
+
+Once installed, the player becomes selectable in the list.
+
+### Hide the icon
+
+Click **Hide menu bar icon**. The key keeps working. To bring the icon back, run this in Terminal:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/urbaneeex/playpause-apple/main/install.sh | bash
+open hammerspoon://playpause-show-icon
 ```
 
-It installs Hammerspoon and `nowplaying-cli` with Homebrew (if missing), downloads the Spoon and loads it from `~/.hammerspoon/init.lua`. On a new Hammerspoon setup it also makes Hammerspoon start at login and hides its Dock icon.
+## Troubleshooting
 
-The only manual step, the first time: enable **Hammerspoon** in System Settings → Privacy & Security → Accessibility (the installer opens that window), then run `open -a Hammerspoon`.
+- **Nothing happens when I press the key**: check that Hammerspoon is turned on in System Settings → Privacy & Security → Accessibility, and that **Route Play/Pause key** is ticked.
+- **Apple Music still opens**: Hammerspoon is not running. Run `open -a Hammerspoon`.
+- **It takes a few seconds to start**: the player was closed, so it has to open and load first. It is immediate while the player is open.
+- **"install nowplaying-cli" message**: run the install line again.
 
-A pixel-art play icon appears in the menu bar.
-
-To update, run the same line again.
-
-### Uninstall
+## Uninstall
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/urbaneeex/playpause-apple/main/uninstall.sh | bash
 ```
 
-### Manual install
+The Play/Pause key goes back to the macOS default.
+
+## For developers
+
+PlayPause is a Hammerspoon Spoon. Manual install:
 
 ```sh
 brew install --cask hammerspoon
@@ -59,32 +102,7 @@ hs.loadSpoon("PlayPause")
 spoon.PlayPause:start()
 ```
 
-## Usage
-
-Click the menu bar icon:
-
-- **Route Play/Pause key**: on or off. Off dims the icon and restores the native macOS behavior.
-- **Players**: pick YouTube Music, Spotify, TIDAL, Deezer or Amazon Music.
-- A player that is not installed shows **Install…** with the available options: **Download the Mac app** (opens the official download page) or **Install as a web app (Chrome)** (opens the web player in Chrome; then use ⋮ → **Cast, save and share** → **Install page as app**).
-
-- **Hide menu bar icon**: removes the icon; the key routing keeps working. To bring it back, run `open hammerspoon://playpause-show-icon` in Terminal.
-
-Your choices are remembered between restarts.
-
-## YouTube Music
-
-YouTube Music has no native Mac app. Install it from Chrome:
-
-1. Open <https://music.youtube.com> in Chrome.
-2. Menu (⋮) → **Cast, save and share** → **Install page as app**.
-
-The app lands in `~/Applications/Chrome Apps.localized`, which the Spoon searches.
-
-Any player installed this way (for example Spotify from <https://open.spotify.com>) works the same: web apps are controlled with the space bar.
-
-## Custom players
-
-Add an entry before calling `start()`. `app` is the app name without `.app`. `toggle` is `"space"` (sends the space bar to the app) or a function:
+To add your own player, insert it before `start()`. `app` is the app name without `.app`; `toggle` is `"space"` (sends the space bar to the app) or a function:
 
 ```lua
 hs.loadSpoon("PlayPause")
@@ -93,19 +111,6 @@ table.insert(spoon.PlayPause.players, {
 })
 spoon.PlayPause:start()
 ```
-
-## Troubleshooting
-
-- **Nothing happens when I press the key**: check that Hammerspoon has Accessibility access and that **Route Play/Pause key** is ticked in the menu.
-- **"install nowplaying-cli" alert**: run `brew install nowplaying-cli`, then reload the config.
-- **Apple Music still opens**: Hammerspoon is not running or lacks Accessibility permission.
-- **It takes a few seconds to start**: the player was closed, so it has to launch and load first. It is instant while the player is open.
-
-## Limitations
-
-- The `"space"` toggle does nothing while a text field (for example search) has focus in the player.
-- Tested with YouTube Music and Spotify, both installed as Chrome web apps. The native Spotify app and the other players are untested.
-- Relies on `nowplaying-cli` to read macOS *Now Playing*.
 
 ## License
 
